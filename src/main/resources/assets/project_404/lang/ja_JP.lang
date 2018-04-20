@@ -1,0 +1,9 @@
+#project_404 日本語言語ファイル
+
+tile.scranton.name=スクラントン現実錨
+advancements.project_404.root.name=SCP-404-MC
+advancements.project_404.root.desc=project_404
+advancements.project_404.scranton.title=SCP-404-MC-2
+advancements.project_404.scranton.desc=認証コード/delete::all
+advancements.project_404.endslayer.title=SCP-404-MC-3
+advancements.project_404.endslayer.desc=認証コード/where_are_u

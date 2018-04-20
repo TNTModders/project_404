@@ -1,0 +1,26 @@
+{
+  "display": {
+    "icon": {
+      "item": "project_404:scranton"
+    },
+    "title": {
+      "translate": "advancements.project_404.scranton.title"
+    },
+    "description": {
+      "translate": "advancements.project_404.scranton.desc"
+    }
+  },
+  "parent": "project_404:root",
+  "criteria": {
+    "creeperbomb": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "project_404:scranton"
+          }
+        ]
+      }
+    }
+  }
+}

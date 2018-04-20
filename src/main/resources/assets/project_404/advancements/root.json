@@ -1,0 +1,21 @@
+{
+  "display": {
+    "icon": {
+      "item": "project_404:scranton"
+    },
+    "title": {
+      "translate": "advancements.project_404.root.name"
+    },
+    "description": {
+      "translate": "advancements.project_404.root.desc"
+    },
+    "background": "project_404:textures/blocks/scranton.png",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "criteria": {
+    "takumi": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}
