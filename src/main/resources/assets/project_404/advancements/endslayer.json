@@ -10,7 +10,7 @@
     "description": {
       "translate": "advancements.project_404.endslayer.desc"
     },
-    "frame": "challenge"
+    "frame": "goal"
   },
   "parent": "project_404:scranton",
   "criteria": {

@@ -3,12 +3,14 @@
     "icon": {
       "item": "project_404:scranton"
     },
+    "hidden":true,
     "title": {
       "translate": "advancements.project_404.scranton.title"
     },
     "description": {
       "translate": "advancements.project_404.scranton.desc"
-    }
+    },
+    "frame": "challenge"
   },
   "parent": "project_404:root",
   "criteria": {
