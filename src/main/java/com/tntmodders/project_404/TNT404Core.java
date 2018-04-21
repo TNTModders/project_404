@@ -4,11 +4,19 @@ import com.tntmodders.project_404.block.BlockScranton;
 import com.tntmodders.project_404.core.TNT404ModInfoCore;
 import com.tntmodders.project_404.tile.TileEntityScranton;
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.toasts.IToast;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.Packet;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -18,6 +26,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -62,7 +71,7 @@ public class TNT404Core {
     @SubscribeEvent
     public void event(LivingEvent.LivingUpdateEvent event) {
         if (event.getEntityLiving() instanceof EntityPlayer &&
-                event.getEntityLiving().world.playerEntities.size() <= 1) {
+                event.getEntityLiving().world.playerEntities.size() <= 1 && !event.getEntityLiving().world.isRemote) {
             if (event.getEntityLiving().getDistanceSq(event.getEntityLiving().world.getSpawnPoint()) > 256 &&
                     event.getEntityLiving().world.loadedTileEntityList.stream().noneMatch(
                             tileEntity -> tileEntity instanceof TileEntityScranton &&
@@ -77,9 +86,8 @@ public class TNT404Core {
                     }
                 });
                 //blocks.add(Blocks.GRASS);
-                for (int i = 0; i < 50; i++) {
-                    Random rand = new Random();
-                    rand.setSeed(Math.abs(System.currentTimeMillis() / 100));
+                for (int i = 0; i < 100; i++) {
+                    Random rand = event.getEntityLiving().getRNG();
                     int x = MathHelper.getInt(rand, -7, 8);
                     int y = MathHelper.getInt(rand, -7, 8);
                     int z = MathHelper.getInt(rand, -7, 8);
@@ -87,28 +95,29 @@ public class TNT404Core {
                             event.getEntityLiving().getPosition().add(x, y, z)).getBlock();
                     if (blocks.contains(block.getRegistryName().toString())) {
                         LOGGER.info("dest:" + block.getLocalizedName());
-
-                        if (!event.getEntityLiving().world.isRemote) {
-                            event.getEntityLiving().world.setBlockState(
-                                    event.getEntityLiving().getPosition().add(x, y, z), Blocks.AIR.getDefaultState());
-                        }
+                        event.getEntityLiving().world.setBlockToAir(event.getEntityLiving().getPosition().add(x, y, z));
                     }
                 }
             }
 
-            if (event.getEntityLiving().world.getWorldTime() % 6000 == 0) {
-                for (int i = 0; i < 5; i++) {
-                    Random rand = new Random();
-                    rand.setSeed(Math.abs(System.currentTimeMillis() / 1000));
-                    Block block = Block.REGISTRY.getRandomObject(rand);
-                    event.getEntityLiving().getEntityData().setBoolean("404_" + block.getRegistryName().toString(),
-                            true);
-                    LOGGER.info(block);
+            if (event.getEntityLiving().world.getWorldTime() % 1000 == 0) {
+                Random rand = new Random();
+                rand.setSeed(Math.abs(System.currentTimeMillis() / 1000));
+                Block block = Block.REGISTRY.getRandomObject(rand);
+                event.getEntityLiving().getEntityData().setBoolean("404_" + block.getRegistryName().toString(), true);
+                LOGGER.info(block);
+                if (event.getEntityLiving() instanceof EntityPlayerMP) {
+                    ((EntityPlayerMP) event.getEntityLiving()).connection.sendPacket(
+                            new PacketChat(Block.getIdFromBlock(block)));
                 }
-                event.getEntityLiving().getEntityData().setBoolean("404_" + event.getEntityLiving().world.getBlockState(
-                        event.getEntityLiving().getPosition().down()).getBlock().getRegistryName().toString(), true);
             }
         }
+    }
+
+    @SubscribeEvent
+    public void ondeath(PlayerEvent.Clone event) {
+        event.getOriginal().getEntityData().getKeySet().forEach(
+                s -> event.getEntityPlayer().getEntityData().setTag(s, event.getOriginal().getEntityData().getTag(s)));
     }
 
     @SubscribeEvent
@@ -146,5 +155,50 @@ public class TNT404Core {
                                 random.nextInt(16) + (chunkZ << 4)));
             }
         }, 1);
+    }
+
+    private class PacketChat implements Packet<INetHandlerPlayClient> {
+        int i;
+
+        private PacketChat() {
+        }
+
+        private PacketChat(Integer i) {
+            this.i = i;
+        }
+
+        @Override
+        public void readPacketData(PacketBuffer buf) {
+            this.i = buf.readInt();
+        }
+
+        @Override
+        public void writePacketData(PacketBuffer buf) {
+            buf.writeInt(i);
+        }
+
+        @Override
+        public void processPacket(INetHandlerPlayClient handler) {
+            Handler.handler(i);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static class Handler {
+        private static void handler(int i) {
+            Block block = Block.getBlockById(i);
+            Minecraft.getMinecraft().getToastGui().add((toastGui, delta) -> {
+                toastGui.getMinecraft().getTextureManager().bindTexture(IToast.TEXTURE_TOASTS);
+                GlStateManager.color(1.0F, 1.0F, 1.0F);
+                toastGui.drawTexturedModalRect(0, 0, 0, 32, 160, 32);
+                toastGui.getMinecraft().fontRenderer.drawString("SCP-404-MC", 30, 7, -11534256);
+                toastGui.getMinecraft().fontRenderer.drawString("対象追加：" + block.getLocalizedName(), 30, 18,
+                        -16777216);
+                RenderHelper.enableGUIStandardItemLighting();
+                toastGui.getMinecraft().getRenderItem().renderItemAndEffectIntoGUI(null, new ItemStack(block), 8, 8);
+                return delta >= 5000L ? IToast.Visibility.HIDE : IToast.Visibility.SHOW;
+            });
+
+        }
     }
 }
