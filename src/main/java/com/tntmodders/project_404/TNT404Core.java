@@ -82,11 +82,6 @@ public class TNT404Core {
                 }
             }
         }
-        if (event.getEntityLiving().world.loadedTileEntityList.stream().anyMatch(
-                tileEntity -> tileEntity instanceof TileEntityScranton &&
-                        event.getEntityLiving().getDistanceSq(tileEntity.getPos()) < 256)) {
-            LOGGER.info("tile");
-        }
     }
 
     @SideOnly(Side.CLIENT)
