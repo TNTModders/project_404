@@ -38,6 +38,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.Random;
+
 
 @Mod(modid = TNT404Core.MODID, version = TNT404Core.VERSION, acceptedMinecraftVersions = "[1.12.2]", name = TNT404Core.MODID)
 public class TNT404Core {
@@ -62,22 +64,27 @@ public class TNT404Core {
 
     @SubscribeEvent
     public void event(LivingEvent.LivingUpdateEvent event) {
-        if (event.getEntityLiving() instanceof EntityPlayer &&
-                event.getEntityLiving().getDistanceSq(event.getEntityLiving().world.getSpawnPoint()) > 256 &&
-                event.getEntityLiving().world.loadedTileEntityList.stream().noneMatch(
-                        tileEntity -> tileEntity instanceof TileEntityScranton &&
-                                event.getEntityLiving().getDistanceSq(tileEntity.getPos()) < 256)) {
-            for (int i = 0; i < 10; i++) {
-                int x = MathHelper.getInt(event.getEntityLiving().world.rand, -7, 8);
-                int y = MathHelper.getInt(event.getEntityLiving().world.rand, -7, 8);
-                int z = MathHelper.getInt(event.getEntityLiving().world.rand, -7, 8);
-                if (event.getEntityLiving().world.getBlockState(
-                        event.getEntityLiving().getPosition().add(x, y, z)).getBlock() == Blocks.DIRT) {
-                    if (FMLCommonHandler.instance().getSide().isClient() && event.getEntityLiving().world.isRemote) {
-                        this.clientEvent(event, x, y, z);
-                    }
-                    if (!event.getEntityLiving().world.isRemote) {
-                        event.getEntityLiving().world.setBlockToAir(event.getEntityLiving().getPosition().add(x, y, z));
+        if (event.getEntityLiving() instanceof EntityPlayer) {
+            if (event.getEntityLiving().getDistanceSq(event.getEntityLiving().world.getSpawnPoint()) > 256 &&
+                    event.getEntityLiving().world.loadedTileEntityList.stream().noneMatch(
+                            tileEntity -> tileEntity instanceof TileEntityScranton &&
+                                    event.getEntityLiving().getDistanceSq(tileEntity.getPos()) < 256)) {
+                for (int i = 0; i < 10; i++) {
+                    Random rand = new Random();
+                    rand.setSeed(event.getEntityLiving().world.getTotalWorldTime());
+                    int x = MathHelper.getInt(rand, -7, 8);
+                    int y = MathHelper.getInt(rand, -7, 8);
+                    int z = MathHelper.getInt(rand, -7, 8);
+                    if (event.getEntityLiving().world.getBlockState(
+                            event.getEntityLiving().getPosition().add(x, y, z)).getBlock() == Blocks.DIRT) {
+                        if (FMLCommonHandler.instance().getSide().isClient() &&
+                                event.getEntityLiving().world.isRemote) {
+                            this.clientEvent(event, x, y, z);
+                        }
+                        if (!event.getEntityLiving().world.isRemote) {
+                            event.getEntityLiving().world.setBlockToAir(
+                                    event.getEntityLiving().getPosition().add(x, y, z));
+                        }
                     }
                 }
             }
