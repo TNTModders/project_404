@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Random;
 
 
-@Mod(modid = TNT404Core.MODID, version = TNT404Core.VERSION, acceptedMinecraftVersions = "[1.12.2]", name = TNT404Core.MODID)
+@Mod(modid = TNT404Core.MODID, version = TNT404Core.VERSION, acceptedMinecraftVersions = "[1.12.2]", name = TNT404Core.MODID, updateJSON = "https://raw.githubusercontent.com/TNTModders/project_404/master/version/version.json")
 public class TNT404Core {
 
     //初期設定
@@ -192,8 +192,7 @@ public class TNT404Core {
                 GlStateManager.color(1.0F, 1.0F, 1.0F);
                 toastGui.drawTexturedModalRect(0, 0, 0, 32, 160, 32);
                 toastGui.getMinecraft().fontRenderer.drawString("SCP-404-MC", 30, 7, -11534256);
-                toastGui.getMinecraft().fontRenderer.drawString("対象追加：" + block.getLocalizedName(), 30, 18,
-                        -16777216);
+                toastGui.getMinecraft().fontRenderer.drawString("対象追加：" + block.getLocalizedName(), 30, 18, -16777216);
                 RenderHelper.enableGUIStandardItemLighting();
                 toastGui.getMinecraft().getRenderItem().renderItemAndEffectIntoGUI(null, new ItemStack(block), 8, 8);
                 return delta >= 5000L ? IToast.Visibility.HIDE : IToast.Visibility.SHOW;
