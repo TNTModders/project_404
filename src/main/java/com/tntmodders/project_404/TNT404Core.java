@@ -52,7 +52,7 @@ public class TNT404Core {
 
     //初期設定
     public static final String MODID = "project_404";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.1";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
     @Instance(MODID)
     public static TNT404Core Instance;
